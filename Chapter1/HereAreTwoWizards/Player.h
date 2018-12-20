@@ -13,10 +13,15 @@ namespace jm
 		vec2 wand_tip = vec2(30.0f, 0.0f);
 		RGB player_color = Colors::red;
 		RGB wand_color = Colors::red;
+		RGB win_color = Colors::gold;
+		RGB lose_color = Colors::black;
+		bool coolTime = false;
+		bool life = true;
+		float distance = 0.0f;
 
 		//double slope = (player_center.y - wand_center.y) / (player_center.x - wand_center.x);
 		
-		void draw()
+		void draw(RGB player_color, RGB wand_color)
 		{
 			beginTransformation();
 			{
@@ -28,6 +33,7 @@ namespace jm
 				drawFilledTriangle(wand_color, 0.05f);
 			}
 			endTransformation();
+			distance = sqrt(center.x * center.x + center.y * center.y);
 		}
 
 		void stun(float stun_time)

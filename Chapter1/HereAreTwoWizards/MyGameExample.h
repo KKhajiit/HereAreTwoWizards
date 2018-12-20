@@ -59,7 +59,7 @@ namespace jm
 			if(start_flag == true)
 				time += 0.001f;
 			
-			if(map.radius > 0)
+			if(map.radius > 0 && player1.life && player2.life)
 				map.radius -= time * this->getTimeStep() * 0.01f;
 			// move player1
 			if (isKeyPressed(GLFW_KEY_A))	player1.center.x -= 0.2f * getTimeStep();
@@ -78,7 +78,7 @@ namespace jm
 			if (isKeyPressed(GLFW_KEY_KP_5))	player2.direction.x -= 50.0f * getTimeStep();
 			
 			//player1 shoot a shooting star
-			if (isKeyPressedAndReleased(GLFW_KEY_H))
+			if (isKeyPressedAndReleased(GLFW_KEY_H) && player1.coolTime == false)
 			{
 				if (magic1 == nullptr)
 				{
@@ -89,8 +89,11 @@ namespace jm
 					magic1->cos = cos(player1.direction.x * PI / 180.0f);
 					magic1->sin = sin(player1.direction.x * PI / 180.0f);
 			}
-			if (magic1 != nullptr) magic1->update(getTimeStep());
-			
+			if (magic1 != nullptr)
+			{
+				magic1->update(getTimeStep());
+				player1.coolTime = true;
+			}
 
 			//player2 shoot a shooting star
 			if (isKeyPressedAndReleased(GLFW_KEY_KP_6))
@@ -103,25 +106,69 @@ namespace jm
 				magic2->cos = -cos(player2.direction.x * PI / 180.0f);
 				magic2->sin = -sin(player2.direction.x * PI / 180.0f);
 			}
-			if (magic2 != nullptr) magic2->update(getTimeStep());
+			if (magic2 != nullptr)
+			{
+				magic2->update(getTimeStep());
+				player2.coolTime = true;
+			}
 
 			// rendering
-			player1.draw();
+//			if(player1.life == true)
+				player1.draw(player1.player_color, player1.wand_color);
 			if (magic1 != nullptr) magic1->draw();
 
-			player2.draw();
+	//		if (player2.life == true)
+				player2.draw(player2.player_color, player2.wand_color);
 			if (magic2 != nullptr) magic2->draw();
 
 
-			/*
-			if (magic1 != nullptr && magic1->distance > map.radius + 0.1f)
+			// magic disapears when it's gets out of the map
+			if (magic1 != nullptr && magic1->distance > map.radius + 0.05f)
+			{
+				magic1 = nullptr;
 				delete magic1;
-			
+				player1.coolTime = false;
+			}
 			if (magic2 != nullptr && magic2->distance > map.radius + 0.1f)
-				delete magic2;*/
-
+			{
+				magic2 = nullptr;
+				delete magic2;
+				player2.coolTime = false;
+			}
 			
-		
+			// when a player lose
+			// 1.went out of the map
+			if (player1.distance > map.radius + 0.1f)
+				player1.life = false;
+			if (player2.distance > map.radius + 0.1f)
+				player2.life = false;
+
+			// 2.hit by magic
+			if (magic2 != nullptr)
+			{
+				if (abs(player1.center.x - magic2->center.x) < 0.1f && abs(player1.center.y - magic2->center.y) < 0.1f)
+					player1.life = false;
+			}
+			if (magic1 != nullptr)
+			{
+				if (abs(player2.center.x - magic1->center.x) < 0.1f && abs(player2.center.y - magic1->center.y) < 0.1f)
+					player2.life = false;
+			}
+			// check players life flag
+			if (player1.life == false)
+			{
+				player1.player_color = player1.lose_color;
+				player1.wand_color = player1.lose_color;
+				player2.player_color = player2.win_color;
+				player2.wand_color = player2.win_color;
+			}
+			else if (player2.life == false)
+			{
+				player2.player_color = player2.lose_color;
+				player2.wand_color = player2.lose_color;
+				player1.player_color = player1.win_color;
+				player1.wand_color = player1.win_color;
+			}
 		}
 	};
 }
